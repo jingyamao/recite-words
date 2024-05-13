@@ -8,7 +8,7 @@
                 mode="horizontal"
                 router
                 :default-active="defaultPage"
-                active-text-color="#a3c57d"
+                active-text-color="rgb(119, 171, 183)"
                 class="el-menu-demo"
             >
                 <el-menu-item
@@ -21,7 +21,7 @@
             </el-menu>
 
             <div class="login">
-                <el-dropdown v-if="token">
+                <el-dropdown v-if="token !== ''">
                     <template #dropdown>
                         <el-dropdown-menu>
                             <el-dropdown-item
@@ -41,21 +41,20 @@
                 <el-icon v-else :size="30" @click="toLogin">
                     <UserFilled />
                 </el-icon>
-                <p class="login-text" v-if="!token" @click="toLogin">登录</p>
+                <p class="login-text" v-if="token === ''" @click="toLogin">登录</p>
             </div>
         </div>
     </div>
 </template>
 <script setup>
 import { useRouter } from "vue-router";
-import { getInfo, logout,getIP,getIPCity } from "../../api/Login";
+// import { getInfo, logout,getIP,getIPCity } from "../../api/Login";
 import { onMounted, ref, computed } from "vue";
 import { getToken, removeToken,setToken } from "../../util/auth";
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
-const token = localStorage.getItem("token");
-
+const token = '';
 
 // 路由数组
 const routerArr = [
@@ -76,36 +75,36 @@ const toLogin = () => {
 
 // 登出
 const toLogout = () => {
-    removeToken();
-    logout()
-        .then((res) => {
-            console.log(res);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+    // removeToken();
+    // logout()
+    //     .then((res) => {
+    //         console.log(res);
+    //     })
+    //     .catch((err) => {
+    //         console.log(err);
+    //     });
 };
 
 // 用户信息
 const userInfo = ref({});
 const getUserInfo = () => {
-    getInfo()
-        .then((res) => {
-            userInfo.value = res.data;
-            if (res.code === 401) {
-                localStorage.removeItem("token");
-                ElMessage.error("登录过期，请重新登录");
-                router.push("/login");
-            }
-        })
-        .catch((err) => {
-            console.log(err);
-        });
+    // getInfo()
+    //     .then((res) => {
+    //         userInfo.value = res.data;
+    //         if (res.code === 401) {
+    //             localStorage.removeItem("token");
+    //             ElMessage.error("登录过期，请重新登录");
+    //             router.push("/login");
+    //         }
+    //     })
+    //     .catch((err) => {
+    //         console.log(err);
+    //     });
 };
 
 // 跳转个人中心
 const toUser = () => {
-    router.push(`/user/${userInfo.value.userId}`);
+    // router.push(`/user/${userInfo.value.userId}`);
 };
 
 onMounted(() => {
@@ -131,31 +130,6 @@ onMounted(() => {
             margin-left: 1vh;
         }
     }
-    .time {
-        height: 100%;
-        width: 50vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        .el-col{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            .title{
-                font-weight: bold; /* 加粗 */
-                color: #333; /* 字体颜色 */
-                font-size: 1.3vw;
-            }
-            span{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                width: 100%;
-                display: inline-block;
-                font-size: 0.9vw;
-            }
-        }
-    }
     .el-menu-demo {
         height: 100%;
         width: 70vh;
@@ -165,8 +139,8 @@ onMounted(() => {
             color: black;
         }
         .el-menu-item:hover {
-            color: #a3c57d;
-            background-color: #e5f4e6;
+            color: rgb(105, 201, 223);
+            background-color: rgb(226, 242, 246);
             transition: color 0.3s ease, background-color 0.3s ease;
         }
     }
@@ -190,8 +164,8 @@ onMounted(() => {
         }
     }
     .login:hover {
-        color: #a3c57d;
-        background-color: #e5f4e6;
+        color: rgb(119, 171, 183);
+        background-color: rgb(209, 229, 233);
         transition: color 0.3s ease, background-color 0.3s ease;
     }
 }

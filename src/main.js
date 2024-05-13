@@ -7,7 +7,7 @@ import elementIcons from "./components/SvgIcon/svgicon.js";
 
 
 // 引入导航栏组件
-import headerNav from './components/Homehead/index.vue'
+import headerNav from "./components/Homehead/index.vue";
 
 // vue实例
 const app = createApp(App);
