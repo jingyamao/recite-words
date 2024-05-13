@@ -166,7 +166,7 @@
 
 <script setup>
 import { ref } from "vue";
-// import { loginUserName } from "../../api/login/index";
+import { loginUserName,registerUser } from "../../api/login/index";
 import { setToken } from "../../util/auth";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";

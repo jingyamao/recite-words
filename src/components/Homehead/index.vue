@@ -4,6 +4,40 @@
             <div class="logoImg">
                 <img src="./logo.webp" alt="" />
             </div>
+            <div class="time">
+                <el-row>
+                    <el-col :span="6">
+                        <span class="title">
+                            {{ weather.city }}
+                        </span>
+                        <span>
+                            天气：{{ weather.weather }}
+                        </span>
+                    </el-col>
+                    <el-col :span="14">
+                        <span>
+                            风向：{{ weather.winddirection }},
+                            风力：{{ weather.windpower }}
+                        </span>
+                        <span>
+                            温度：{{ weather.temperature }}，
+                            湿度：{{ weather.humidity }}
+                        </span>
+                        <span>
+                            最近一次更新时间：{{ weather.reporttime }}
+                        </span>
+                    </el-col>
+                    <el-col :span="4">
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '晴' "><Sunny /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '' "><MostlyCloudy /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '' "><PartlyCloudy /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '小雨' "><Drizzling /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '大雨' "><Pouring /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '多云' "><Cloudy /></el-icon>
+                        <el-icon size="50px" color="#a3c576" v-if="weather.weather === '' "><Lightning /></el-icon>
+                    </el-col>
+                </el-row>
+            </div>
             <el-menu
                 mode="horizontal"
                 router
@@ -48,13 +82,41 @@
 </template>
 <script setup>
 import { useRouter } from "vue-router";
-// import { getInfo, logout,getIP,getIPCity } from "../../api/Login";
+import { getInfo,getIP,getIPCity } from "../../api/login";
 import { onMounted, ref, computed } from "vue";
 import { getToken, removeToken,setToken } from "../../util/auth";
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
 const token = '';
+
+// 在组件挂载后获取当前时间，并更新 currentTime 数据
+onMounted(() => {
+    getUserIP();
+    // getUserInfo();  
+    
+});
+
+// 获取当前ip
+const weather = ref('')
+function getUserIP(){
+    getIP()
+    .then(res =>{
+        // console.log(res)
+        getIPCity(res.city)
+        .then(res =>{
+            // console.log(res)
+            weather.value = res.lives[0];
+        })
+        .catch(error =>{
+            console.log(error)
+        })
+    })
+    .catch(error =>{
+        console.log(error)
+    })
+}
+
 
 // 路由数组
 const routerArr = [
@@ -75,7 +137,7 @@ const toLogin = () => {
 
 // 登出
 const toLogout = () => {
-    // removeToken();
+    removeToken();
     // logout()
     //     .then((res) => {
     //         console.log(res);
@@ -88,18 +150,18 @@ const toLogout = () => {
 // 用户信息
 const userInfo = ref({});
 const getUserInfo = () => {
-    // getInfo()
-    //     .then((res) => {
-    //         userInfo.value = res.data;
-    //         if (res.code === 401) {
-    //             localStorage.removeItem("token");
-    //             ElMessage.error("登录过期，请重新登录");
-    //             router.push("/login");
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.log(err);
-    //     });
+    getInfo()
+        .then((res) => {
+            userInfo.value = res.data;
+            if (res.code === 401) {
+                localStorage.removeItem("token");
+                ElMessage.error("登录过期，请重新登录");
+                router.push("/login");
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 };
 
 // 跳转个人中心
@@ -107,9 +169,7 @@ const toUser = () => {
     // router.push(`/user/${userInfo.value.userId}`);
 };
 
-onMounted(() => {
-    getUserInfo();
-});
+
 </script>
 
 <style lang="less" scoped>
@@ -128,6 +188,31 @@ onMounted(() => {
             height: 100%;
             width: 15vh;
             margin-left: 1vh;
+        }
+    }
+    .time {
+        height: 100%;
+        width: 50vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        .el-col{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            .title{
+                font-weight: bold; /* 加粗 */
+                color: #333; /* 字体颜色 */
+                font-size: 1.3vw;
+            }
+            span{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                width: 100%;
+                display: inline-block;
+                font-size: 0.9vw;
+            }
         }
     }
     .el-menu-demo {
