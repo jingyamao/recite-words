@@ -1,31 +1,14 @@
 import request from "../../util/request";
-import { getToken, removeToken,setToken } from "../../util/auth";
+import { getToken, getUserId,removeToken,setToken } from "../../util/auth";
 
 // 登录
 export function loginUserName(data) {
     return request({
         method: "post",
         url: "/login",
-        params:{
-            userName: data.userName,
+        data:{
+            username: data.userName,
             password: data.password
-        }
-    });
-}
-
-// 注册
-export function registerUser(data) {
-    return request({
-        method: "post",
-        url: "/register",
-        params:{
-            action: 'regist',
-            userName: data.userName,
-            password: data.password,
-            email: data.email,
-            phone: data.phone,
-            vetify: data.vetify,
-            verification_code: data.verification_code
         }
     });
 }
@@ -35,13 +18,30 @@ export function registerUsersmsCode(data) {
     return request({
         method: "post",
         url: "/register",
-        params:{
-            action: 'vetify',
-            email: data.email
+        data:{
+            action: 'regist',
+            email: data.email,
+            phone: data.mobile,
         }
     });
 }
 
+// 注册
+export function registerUser(data) {
+    return request({
+        method: "post",
+        url: "/register",
+        data:{
+            action: 'vetify',
+            vetify: data.smsCode,
+            verification_code: data.verification_code,
+            username: data.userName,
+            password: data.password,
+            email: data.email,
+            phone: data.mobile,
+        }
+    });
+}
 
 // 获取用户信息
 export function getInfo() {
@@ -49,7 +49,10 @@ export function getInfo() {
         method: "post",
         url: "/settings",
         headers:{
-            Authorization: getToken()
+            Authorization: "Bearer "+getToken()
+        },
+        data:{
+            username: getUserId()
         }
     });
 }

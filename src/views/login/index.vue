@@ -84,23 +84,21 @@
                     </template>
                 </el-input>
             </el-form-item>
-            <el-form-item prop="confirmPassword" v-if="loginType === 'register'">
+            <!-- <el-form-item prop="confirmPassword" v-if="loginType === 'register'">
                 <el-input
                     v-model="confirmPassword"
                     type="password"
                     size="large"
-                    auto-complete="off"
                     placeholder="请确认密码"
                 >
                     <template #prefix
                         ><el-icon><Lock /></el-icon>
                     </template>
                 </el-input>
-            </el-form-item>
-            <el-form-item prop="mobile" v-if="loginType === 'register'">
+            </el-form-item> -->
+            <el-form-item  v-if="loginType === 'register'">
                 <el-input
                     v-model="register.mobile"
-                    type="text"
                     size="large"
                     placeholder="手机号"
                 >
@@ -111,10 +109,9 @@
                     </template>
                 </el-input>
             </el-form-item>
-            <el-form-item prop="email" v-if="loginType === 'register'">
+            <el-form-item v-if="loginType === 'register'">
                 <el-input
                     v-model="register.email"
-                    type="text"
                     size="large"
                     placeholder="邮箱"
                 >
@@ -124,7 +121,6 @@
                 </el-input>
             </el-form-item>
             <el-form-item
-                prop="smsCode"
                 v-if="loginType === 'register'"
                 class="smsCode"
             >
@@ -166,13 +162,12 @@
 
 <script setup>
 import { ref } from "vue";
-import { loginUserName,registerUser } from "../../api/login/index";
-import { setToken } from "../../util/auth";
+import { loginUserName,registerUser,registerUsersmsCode } from "../../api/login/index";
+import { setToken,setUserId } from "../../util/auth";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
-
 
 // 验证密码是否一致
 const confirmPassword = ref('')
@@ -191,11 +186,6 @@ const loginRules = {
     userName: [{ required: true, message: "请输入用户名", trigger: "blur" }],
     email: [
         { required: true, message: "请输入邮箱地址", trigger: "blur" },
-        {
-            pattern: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
-            message: "邮箱格式不正确",
-            trigger: "blur",
-        },
     ],
     mobile: [
         { required: true, message: "请输入手机号", trigger: "blur" },
@@ -209,9 +199,9 @@ const loginRules = {
     password: [
         { required: true, message: "请输入密码", trigger: "blur" },
         {
-            min: 6,
+            min: 0,
             max: 18,
-            message: "密码长度在 6 到 18 个字符",
+            message: "密码长度在 0 到 18 个字符",
             trigger: "blur",
         },
     ],
@@ -229,42 +219,44 @@ const register = ref({
     password: "",
     smsCode: "",
     email: "",
-    mobile: ""
+    mobile: "",
+    verification_code: "",
 });
 // 获取验证码
 const getCode = () => {
-    ElMessage.success(res.msg);
-    isCountingDown.value = true;
-    const timer = setInterval(() => {
-        if (countdown.value > 0) {
-            countdown.value--;
-        } else {
-            isCountingDown.value = false;
-            countdown.value = 60;
-            clearInterval(timer);
-        }
-    }, 1000);
-    // getSmsCode(register.value.email)
-    //     .then((res) => {
-    //         if (res.code === 200) {
-    //             ElMessage.success(res.msg);
-    //             isCountingDown.value = true;
-    //             const timer = setInterval(() => {
-    //                 if (countdown.value > 0) {
-    //                     countdown.value--;
-    //                 } else {
-    //                     isCountingDown.value = false;
-    //                     countdown.value = 60;
-    //                     clearInterval(timer);
-    //                 }
-    //             }, 1000);
-    //         } else {
-    //             ElMessage.error(res.msg);
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.log(err);
-    //     });
+    // ElMessage.success(res.msg);
+    // isCountingDown.value = true;
+    // const timer = setInterval(() => {
+    //     if (countdown.value > 0) {
+    //         countdown.value--;
+    //     } else {
+    //         isCountingDown.value = false;
+    //         countdown.value = 60;
+    //         clearInterval(timer);
+    //     }
+    // }, 1000);
+    registerUsersmsCode(register.value)
+        .then((res) => {
+            if (res) {
+                ElMessage.success("获取成功");
+                register.value.verification_code = res.verification_code
+                isCountingDown.value = true;
+                const timer = setInterval(() => {
+                    if (countdown.value > 0) {
+                        countdown.value--;
+                    } else {
+                        isCountingDown.value = false;
+                        countdown.value = 60;
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            } else {
+                ElMessage.error(res.msg);
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        });
 };
 
 // 验证码倒计时
@@ -281,25 +273,41 @@ const loginForm = ref({
 
 // 登录注册表单
 const submitForm = async () => {
-    ElMessage.success("登录成功");
-    setTimeout(() => {
-        router.push("/home");
-    }, 800);
-    // if (!loginRef.value) return;
-    // await loginRef.value.validate((valid) => {
-    //     if (valid) {
-    //         loginByUserName();
-    //     } else {
-    //         return false;
-    //     }
-    // });
+    if (!loginRef.value) return;
+    await loginRef.value.validate((valid) => {
+        if (valid) {
+            if(loginType.value === 'userName'){
+                loginByUserName()
+            }else{
+                registerUser(register.value)
+                .then(res =>{
+                    console.log(res)
+                    ElMessage.success("注册成功,请返回登陆");
+                    register.value.userName = "";
+                    register.value.password = "";
+                    register.value.smsCode = "";
+                    register.value.email = "";
+                    register.value.mobile = "";
+                    register.value.verification_code = "";
+                    loginType.value = "userName";
+                })
+                .catch(error =>{
+                    console.log(error)
+                })
+            }
+            
+        } else {
+            return false;
+        }
+    });
 };
 // 登陆
 const loginByUserName = () => {
     loginUserName(loginForm.value)
         .then((res) => {
-            console.log(res.data)
-            setToken(res.data.token);
+            // console.log(res)
+            setToken(res.access_token);
+            setUserId(loginForm.value.userName)
             ElMessage.success("登录成功");
             setTimeout(() => {
                 router.push("/home");

@@ -55,13 +55,18 @@
             </el-menu>
 
             <div class="login">
-                <el-dropdown v-if="token !== ''">
+                <el-dropdown v-if="token">
+                    <el-avatar
+                        class="userAvatar"
+                        :size="50"
+                        src="/src/components/Homehead/logo.webp"
+                    ></el-avatar>
                     <template #dropdown>
                         <el-dropdown-menu>
                             <el-dropdown-item
                                 @click="toUser"
                                 class="dropdownNickName"
-                                >{{ userInfo.nickName }}</el-dropdown-item
+                                >{{ userInfo.Username }}</el-dropdown-item
                             >
                             <el-dropdown-item @click="toUser"
                                 >个人中心</el-dropdown-item
@@ -75,7 +80,7 @@
                 <el-icon v-else :size="30" @click="toLogin">
                     <UserFilled />
                 </el-icon>
-                <p class="login-text" v-if="token === ''" @click="toLogin">登录</p>
+                <p class="login-text" v-if="!token" @click="toLogin">登录</p>
             </div>
         </div>
     </div>
@@ -84,17 +89,16 @@
 import { useRouter } from "vue-router";
 import { getInfo,getIP,getIPCity } from "../../api/login";
 import { onMounted, ref, computed } from "vue";
-import { getToken, removeToken,setToken } from "../../util/auth";
+import { getToken, removeToken,setToken,removeUserId } from "../../util/auth";
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
-const token = '';
+const token = localStorage.getItem("token");
 
 // 在组件挂载后获取当前时间，并更新 currentTime 数据
 onMounted(() => {
     getUserIP();
-    // getUserInfo();  
-    
+    getUserInfo();
 });
 
 // 获取当前ip
@@ -138,13 +142,9 @@ const toLogin = () => {
 // 登出
 const toLogout = () => {
     removeToken();
-    // logout()
-    //     .then((res) => {
-    //         console.log(res);
-    //     })
-    //     .catch((err) => {
-    //         console.log(err);
-    //     });
+    removeUserId();
+    ElMessage.success("退出成功");
+    router.push("/login");
 };
 
 // 用户信息
@@ -152,12 +152,12 @@ const userInfo = ref({});
 const getUserInfo = () => {
     getInfo()
         .then((res) => {
-            userInfo.value = res.data;
-            if (res.code === 401) {
-                localStorage.removeItem("token");
-                ElMessage.error("登录过期，请重新登录");
-                router.push("/login");
-            }
+            userInfo.value = res.result.User_Info;
+            // if (res.code === 401) {
+            //     localStorage.removeItem("token");
+            //     ElMessage.error("登录过期，请重新登录");
+            //     router.push("/login");
+            // }
         })
         .catch((err) => {
             console.log(err);
