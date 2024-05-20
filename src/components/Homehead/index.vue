@@ -166,7 +166,7 @@ const getUserInfo = () => {
 
 // 跳转个人中心
 const toUser = () => {
-    // router.push(`/user/${userInfo.value.userId}`);
+    router.push(`/userCenter`);
 };
 
 

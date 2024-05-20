@@ -227,7 +227,7 @@ function handleWordBook(item){
 
 // let Wordpercent = (word_book.value.wordNum/word_book.value.wordAllNum)*100;
 // Wordpercent = Wordpercent.toFixed(2)
-let Wordpercent = 10
+let Wordpercent = ref(0)
 
 // 选择单词书,查询所有单词书
 const wordAllBook = ref();
@@ -261,6 +261,12 @@ function get_daily_wordsValue(data){
     if(dailyAddreviewWord.value.review_plan.error){
       dailyAddreviewWord.value.review_plan = []
     }
+    if(res.daily_words.length !== 0){
+      Wordpercent.value = (res.daily_words[0].reviewed_count/(res.daily_words[0].remaining_count+res.daily_words[0].reviewed_count))*100;
+    }else{
+      Wordpercent.value = 100;
+    }
+    
   })
   .catch(error =>{
     console.log(error)
